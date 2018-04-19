@@ -1,3 +1,8 @@
+Version 4.0
+
+Wordpress 3+
+WooCommerce 3+
+
 === JOAPP API ===
 Contributors: Sepahan Data Tools Co.
 Tags: joapp-api,Uproid.com, JoApp.ir , Bejo.ir, Sepahan Data Tools
