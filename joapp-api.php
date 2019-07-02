@@ -1,15 +1,20 @@
 <?php
-
 /*
   Plugin Name: JOAPP API
-  Plugin URI: http://joapp.ir/wordpress
+  Plugin URI: https://joapp.ir/wordpress
   Description: افزونه ای برای تبدیل سایت های وردپرس به اپلیکیشن در JoApp
-  Version: 4.0.0
+  Version: 5.0.0
   Author: SEPAHAN DATA TOOLS Co.
-  Author URI: http://bejo.ir/
+  Author URI: https://bejo.ir/
   Copyright: 2017 joapp.ir & bejo.ir
  */
-define("JOAPP_API_VERSION", 400);
+if (!defined('ABSPATH')) {
+    exit();
+}
+
+define("JOAPP_API_VERSION", 500);
+define("JOAPP_MIN_SUPPORT", 500);
+        
 $dir = joapp_api_dir();
 //add_action('plugins_loaded', 'joapp_api_load_textdomain');
 //function joapp_api_load_textdomain() {
@@ -38,7 +43,7 @@ function joapp_api_add_action_meta_links($links, $file) {
         $slug = 'joapp-api';
         $new_links = array(
             'details' => sprintf('<a href="%s" class="button thickbox" title="%s">%s</a>', self_admin_url('plugin-install.php?tab=plugin-information&amp;plugin=' . $slug . '&amp;TB_iframe=true&amp;width=600&amp;height=550'), esc_attr(sprintf(__('More information about %s'), $plugin_data['Name'])), __('Details')),
-            'doc' => sprintf('<a href="%s" target="_blank" class="button button-primary" title="%s">%s</a>', "http://joapp.ir/wordpress", 'آموزش ها', 'آموزش')
+            'doc' => sprintf('<a href="%s" target="_blank" class="button button-primary" title="%s">%s</a>', "https://joapp.ir/wordpress", 'آموزش ها', 'آموزش')
         );
 
         $links = array_merge($links, $new_links);
@@ -55,6 +60,7 @@ function joapp_api_add_action_links($links) {
 }
 
 function joapp_api_init() {
+    $wp_actions = null;
     global $joapp_api;
     if (phpversion() < 5) {
         add_action('admin_notices', 'joapp_api_php_version_warning');
@@ -126,15 +132,17 @@ function get_version_joapp_api() {
 }
 
 add_action('init', 'joapp_api_init');
+if (function_exists('is_admin') && is_admin()) {
 
-include( plugin_dir_path(__FILE__) . 'custom_feilds_joapp.php');
-include( plugin_dir_path(__FILE__) . 'custom_feilds_intent_joapp.php');
-include( plugin_dir_path(__FILE__) . 'custom_woo_category.php');
-include( plugin_dir_path(__FILE__) . 'custom_col_page_joapp.php');
+    include( plugin_dir_path(__FILE__) . 'custom_feilds_joapp.php');
+    include( plugin_dir_path(__FILE__) . 'custom_feilds_intent_joapp.php');
+    include( plugin_dir_path(__FILE__) . 'custom_woo_category.php');
+    include( plugin_dir_path(__FILE__) . 'custom_col_page_joapp.php');
+    include( plugin_dir_path(__FILE__) . 'joapp_api_update.php');
+    include( plugin_dir_path(__FILE__) . 'api_ajax.php');
+}
+
 include( plugin_dir_path(__FILE__) . 'payment/pay.php');
-include( plugin_dir_path(__FILE__) . 'joapp_api_update.php');
-include( plugin_dir_path(__FILE__) . 'api_ajax.php');
-
 register_activation_hook("$dir/joapp-api.php", 'joapp_api_activation');
 register_deactivation_hook("$dir/joapp-api.php", 'joapp_api_deactivation');
 add_action('activated_plugin', 'joapp_api_cyb_activation_redirect');

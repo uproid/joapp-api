@@ -122,7 +122,7 @@ function save_option($id, $value) {
 }
 
 function joapp_ajax_get_plugins() {
-    $url = "http://joapp.ir/plugin_update/wp/joapp_api_plugins.php";
+    $url = "https://joapp.ir/plugin_update/wp/joapp_api_plugins.php";
     $string_json = file_get_contents($url);
 
     if ($string_json == "")

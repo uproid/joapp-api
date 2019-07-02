@@ -1,6 +1,6 @@
 <?php
 
-$api_url = 'http://joapp.ir/plugin_update/wp/';
+$api_url = 'https://joapp.ir/plugin_update/wp/';
 $plugin_slug = basename(dirname(__FILE__));
 
 

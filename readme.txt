@@ -1,4 +1,4 @@
-Version 4.0
+Version 5.0
 
 Wordpress 3+
 WooCommerce 3+
@@ -18,4 +18,3 @@ Tags: joapp-api,Uproid.com, JoApp.ir , Bejo.ir, Sepahan Data Tools
 برای مشاهده آخرین آموزش های پلاگین نویسی برای JoApp API در اپلیکیشن های وردپرسی به لینک زیر مراجعه نمایید:
 
 http://api.joapp.ir
-

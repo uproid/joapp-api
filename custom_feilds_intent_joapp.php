@@ -67,8 +67,8 @@ function layers_child_meta_box_callback_intent_joapp($post) {
     wp_nonce_field('layers_child_meta_box', 'layers_child_meta_box_nonce');
     ?>
     <input style="direction: ltr;min-width: 300px;color:red;border-color: red;font-weight: bold" name="joapp_intent_url" type="text" value="<?php echo $url == "" ? "http://bejo.ir" : $url; ?>"/>
-    <a target="_blank" href="http://joapp.ir/plugin_update/wordpress_slider_intent.php#sec174" style="vertical-align: bottom" class="button button-primary">?</a>
-    <a style="background-color: #FFF;padding: 0" target="_blank" href="http://joapp.ir/plugin_update/joapp_intent.php" style="vertical-align: bottom" class="button">
+    <a target="_blank" href="https://joapp.ir/plugin_update/wordpress_slider_intent.php#sec174" style="vertical-align: bottom" class="button button-primary">?</a>
+    <a style="background-color: #FFF;padding: 0" target="_blank" href="https://joapp.ir/plugin_update/joapp_intent.php" style="vertical-align: bottom" class="button">
         <img style="width: 25px;height: 25px" src="<?php echo plugins_url('joapp-api') . "/assets/icons/ic_build.jpg"; ?>" />
     </a>
     <?php
