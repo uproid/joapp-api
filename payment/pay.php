@@ -15,7 +15,8 @@ function joapp_api_start_session() {
 
             $file_name = 'page.php';
             global $joapp_result;
-            $joapp_result = dirname(__FILE__) . '/templates/' . $file_name;
+            //$joapp_result = dirname(__FILE__) . '/templates/' . $file_name;
+            $joapp_result = dirname(__FILE__) . '/templates_full/' . $file_name;
             do_action("joapp_api_action_payment_template");
             return $joapp_result;
         }
