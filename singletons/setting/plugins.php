@@ -10,7 +10,7 @@ if (!function_exists('is_admin') || !is_admin()) {
 <div class="wrap plugin-install-tab-featured">
     <h1 class="wp-heading-inline">افزونه های کمکی JoApp API</h1>
     <div class="notice inline notice-info notice-alt">
-        <p>در این بخش افزونه های جانبی JoApp API برای افزایش کارایی اپلیکیشن های سرویس WordPress JoApp Pro قرار دارد. فایل ZIP افزونه را دانلود نمایید و در بخش افزونه های وردپرس نصب نمایید. شما نیز میتوانید افزونه های ساخته شده خود را برای انتشار به ایمیل info@bejo.ir ارسال نمایید. <a href="http://api.joapp.ir">مستندات پلاگین نویسی JoApp API</a></p>
+        <p>در این بخش افزونه های جانبی JoApp API برای افزایش کارایی اپلیکیشن های سرویس WordPress JoApp Pro قرار دارد. فایل ZIP افزونه را دانلود نمایید و در بخش افزونه های وردپرس نصب نمایید. شما نیز میتوانید افزونه های ساخته شده خود را برای انتشار به ایمیل info@bejo.ir ارسال نمایید. <a href="https://api.joapp.ir">مستندات پلاگین نویسی JoApp API</a></p>
         <strong>همهٔ حقوق برای شرکت داده ابزار سپاهان محفوظ است. ©‏ ۱۳۹۷</strong>
     </div>
     <hr/>

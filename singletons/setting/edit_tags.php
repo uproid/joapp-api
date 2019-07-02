@@ -17,7 +17,7 @@ function joapp_api_edit_tags_func() {
 
     <script>
         function new_tag() {
-            jQuery("#all_tags").append('<li class="new_joapp_tag"><label>عنوان تگ </label><input type="text" id="new_tag_title"/><label>رویداد تگ </label><input type="text" id="new_tag_event"/><a target="_blank" href="http://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a></li>');
+            jQuery("#all_tags").append('<li class="new_joapp_tag"><label>عنوان تگ </label><input type="text" id="new_tag_title"/><label>رویداد تگ </label><input type="text" id="new_tag_event"/><a target="_blank" href="https://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a></li>');
         }
 
         function save_tags_joapp() {
@@ -75,7 +75,7 @@ function joapp_api_edit_tags_func() {
                     <label>رویداد تگ </label>
                     <input value="<?php echo $tag->event ?>" type="text" id="new_tag_event"/>
                     <a onclick="delete_tag(this)" class="button button-cancel">حذف</a>
-                    <a target="_blank" href="http://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a>
+                    <a target="_blank" href="https://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a>
                 </li>
                 <?php
             }
@@ -85,13 +85,22 @@ function joapp_api_edit_tags_func() {
                 <input type="text" id="new_tag_title"/>
                 <label>رویداد تگ </label>
                 <input type="text" id="new_tag_event"/>
-                <a target="_blank" href="http://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a>
+                <a target="_blank" href="https://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a>
             </li>
         </ol>
         <hr/>
         <a class="button button-primary" onclick="save_tags_joapp()">ذخیره</a>
         <a class="button button-cancel" href="admin.php?page=joapp-api&tab=3">بازگشت</a>
     </div>
+    <?php
+    wp_enqueue_script(array("jquery", "jquery-ui-core", "interface", "jquery-ui-sortable", "wp-lists", "jquery-ui-sortable"));
+    wp_enqueue_script("scriptaculous-dragdrop");
+    ?>
+    <script>
+        jQuery(document).ready(function () {
+            jQuery("#all_tags").sortable();
+        });
+    </script>
     <?php
 }
 ?>

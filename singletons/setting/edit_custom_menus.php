@@ -21,7 +21,7 @@ function joapp_api_edit_menu_func() {
 
     <script>
         function new_tag() {
-            jQuery("#all_menus").append('<li class="new_joapp_tag"><img onclick="select_icon(this)" class="icon_event_joapp" onclick="icon_one_select(this)" src="<?php getIcon('ic_language'); ?>" id="new_tag_icon" /><label>عنوان منو </label><input type="text" id="new_tag_title"/><label>رویداد منو </label><input type="text" id="new_tag_event"/><a target="_blank" href="http://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a></li>');
+            jQuery("#all_menus").append('<li class="new_joapp_tag"><img onclick="select_icon(this)" class="icon_event_joapp" onclick="icon_one_select(this)" src="<?php getIcon('ic_language'); ?>" id="new_tag_icon" /><label>عنوان منو </label><input type="text" id="new_tag_title"/><label>رویداد منو </label><input type="text" id="new_tag_event"/><a target="_blank" href="https://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a></li>');
         }
 
         function save_menus_joapp() {
@@ -133,7 +133,7 @@ function joapp_api_edit_menu_func() {
                     <label>رویداد منو </label>
                     <input value="<?php echo $tag->event ?>" type="text" id="new_tag_event"/>
                     <a onclick="delete_tag(this)" class="button button-cancel">حذف</a>
-                    <a target="_blank" href="http://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a>
+                    <a target="_blank" href="https://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a>
                 </li>
                 <?php
             }
@@ -144,7 +144,7 @@ function joapp_api_edit_menu_func() {
                 <input type="text" id="new_tag_title"/>
                 <label>رویداد منو </label>
                 <input type="text" id="new_tag_event"/>
-                <a target="_blank" href="http://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a>
+                <a target="_blank" href="https://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a>
             </li>
         </ol>
         <hr/>
@@ -234,5 +234,15 @@ function joapp_api_edit_menu_func() {
         </span>
     </div>
     <?php
+    wp_enqueue_script(array("jquery", "jquery-ui-core", "interface", "jquery-ui-sortable", "wp-lists", "jquery-ui-sortable"));
+    wp_enqueue_script("scriptaculous-dragdrop");
+    ?>
+    <script>
+        jQuery(document).ready(function () {
+            jQuery("#all_menus").sortable();
+        });
+    </script>
+    <?php
 }
 ?>
+    
