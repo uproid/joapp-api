@@ -27,7 +27,6 @@ class JOAPP_API_Response {
         }
         $data = array_merge(array('joapp_api_version_code' => (INT) get_option("joapp_api_version_code", 1)), $data);
         $R = ($_SERVER['REQUEST_METHOD'] === 'POST' ? "POST" : "GET");
-
         $data = array_merge(array('v' => JOAPP_API_VERSION), $data);
 
         $data = array_merge(array('method' => $R), $data);
@@ -35,7 +34,9 @@ class JOAPP_API_Response {
         $post_view = get_option("joapp_api_post_view", "");
         $data = array_merge(array('post_view' => $post_view), $data);
         $data = apply_filters('joapp_api_encode', $data);
-
+        
+        $data = $this->check_support($data);
+        
         if (function_exists('joapp_encode')) {
             if (version_compare(PHP_VERSION, '5.3') < 0) {
                 $joapp = joapp_encode($data);
@@ -62,6 +63,11 @@ class JOAPP_API_Response {
 
         return $joapp;
     }
+    
+    function check_support($data){
+        /*check support avtions*/
+        return $data;
+    }
 
     function is_value_included($key) {
         if (empty($this->include_values) && empty($this->exclude_values)) {
@@ -76,7 +82,7 @@ class JOAPP_API_Response {
     }
 
     function respond($result, $status, $http_status, $skey = "") {
-
+        //@ob_clean();
         global $joapp_api;
         $joapp = $this->get_joapp($result, $status);
         $status_redirect = "redirect_$status";
@@ -111,9 +117,9 @@ class JOAPP_API_Response {
         if ($skey === "") {
             echo $result;
         } else {
-            include_once __DIR__."/chipher.php";
+            include_once __DIR__ . "/chipher.php";
             $encoder = AesCipher::encrypt($skey, $result);
-            echo "{".$encoder->getData()."}";
+            echo "{" . $encoder->getData() . "}";
         }
     }
 

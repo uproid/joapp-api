@@ -3,6 +3,7 @@
 class JOAPP_API {
 
     function __construct() {
+       
         if (isset($_REQUEST['check_update']) && $_REQUEST['check_update'] == '1') {
             $this->check_update();
             exit;
@@ -14,6 +15,7 @@ class JOAPP_API {
         add_action('admin_menu', array(&$this, 'admin_menu'));
         add_action('update_option_joapp_api_base', array(&$this, 'flush_rewrite_rules'));
         add_action('pre_update_option_joapp_api_controllers', array(&$this, 'update_controllers'));
+         
     }
 
     function template_redirect() {
@@ -542,7 +544,7 @@ class JOAPP_API {
                             <p>این لینک فایل APK نسخه جدید برنامه میباشد که در صورت افزایش شماره نسخه دانلود شده و جایگزین برنامه قبلی در گوشی میشود. توجه کنید که این برنامه باید با شماره نسخه بیشتر از نسخه قبلی ، دقیقا با همان نام بسته برنامه اصلی و همچنین در صورت استفاده از KeyStore باید با همان KeyStore برنامه قبلی ساخته شده باشد، تا عملیات نصب صورت گیرد. همچنین تست کنید کاراکتر اضافه ای وارد نشده باشد و دسترسی مستقیم به آن در مرورگر وجود دارد.</p>
                             <p>در صورتی که مارکت ها به شما اجازه استفاده از به روز رسانی از داخل اپلیکیشن را نمیدهند میتوانید از لینک های ارجاع به مارکت استفاده نمایید به طور مثال فرض کنید نام بسته برنامه شما ir.bejo.joapp باشد در این صورت لینک ارجاع مارکت به صورت زیر میباشد که در فیلد بالا قرار میدهید.</p>
                             <pre class="ltr text-red">{bazaar://details?id=<strong>ir.bejo.joapp</strong>|Intent.ACTION_VIEW|com.farsitel.bazaar}</pre>
-                            <p><a href="http://joapp.ir/plugin_update/#sec174" target="_blank">آموزش برای دیگر مارکت ها</a></p>
+                            <p><a href="https://joapp.ir/plugin_update/#sec174" target="_blank">آموزش برای دیگر مارکت ها</a></p>
                         </div>
                         <hr/>
                         <table class="form-table">
@@ -683,17 +685,17 @@ class JOAPP_API {
                                         }
 
                                         array_push($allow_types, "joapp_intent");
-
+                                        global $wp_post_types;
                                         foreach ($post_types as $k => $p) {
                                             $c = wp_count_posts($p);
                                             if ($c->publish == 0 && ($p != 'post' && $p != "joapp_intent"))
                                                 continue;
-
                                             $is_allow_type = in_array($p, $allow_types);
+                                            $pt = $wp_post_types[$p];
                                             ?>
                                             <div>
                                                 <input <?php echo ($p == 'joapp_intent' ? "disabled='disabled' readonly " : "") ?> <?php echo $is_allow_type ? ' checked ' : '' ?> type="checkbox" name="joapp_allow_post_types[]" value="<?php echo $p; ?>" />
-                                                <label><?php echo $p . ": " . $c->publish ?></label>
+                                                <label><?php echo $pt->label . ": " . $c->publish ?></label>
                                             </div>
                                             <?php
                                         }
@@ -717,6 +719,7 @@ class JOAPP_API {
                                                 $json_hidden_list_menu = get_option('joapp_api_hidden_category_menu', "[]");
                                                 $hidden_list = json_decode($json_hidden_list);
                                                 $hidden_list_menu = json_decode($json_hidden_list_menu);
+
                                                 $terms = get_categories();
                                                 foreach ($hidden_list as $t) {
 
@@ -744,6 +747,9 @@ class JOAPP_API {
                                                 <?php
                                                 $json_hidden_list = get_option('joapp_api_hidden_category', "[]");
                                                 $hidden_list = json_decode($json_hidden_list);
+//                                                $args = array(
+//                                                    'taxonomy' => 'category'
+//                                                );
                                                 $terms = get_categories();
                                                 foreach ($terms as $t) {
                                                     if (in_array($t->term_id, $hidden_list))
@@ -1266,7 +1272,7 @@ class JOAPP_API {
                                         <a style="vertical-align: bottom" onclick="delete_slider(this)" class='button button-secoundary'>حذف</a>
                                         <label>رویداد ارجاع مستقیم :</label>
                                         <input dir="ltr" id="image-intent" type="text" name="image_slider[intent][]" value="<?php echo $value->intent ?>" />
-                                        <a target="_blank" href="http://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a>
+                                        <a target="_blank" href="https://joapp.ir/plugin_update/wordpress_slider_intent.php" style="vertical-align: bottom" class="button button-primary">?</a>
                                     </div>
                                     <?php
                                 }
@@ -1311,7 +1317,7 @@ class JOAPP_API {
                                                 return;
                                             }
 
-                                            var str = "<div style='margin:5px;'><input id='image-url' type='hidden' name='image_slider[url][]' value='" + attachment.url + "' /><img id='image-view' class='thumbnail thumbnail-image' src='" + attachment.url + "' style='height: 80px; width: 160px;cursor: pointer' onclick='delete_slider(this);'/><a style='vertical-align: bottom' onclick='delete_slider(this)' class='button button-secoundary'>حذف</a><label>رویداد ارجاع مستقیم :</label><input dir='ltr' id='image-intent' type='text' name='image_slider[intent][]' value='' /><a target='_blank' href='http://joapp.ir/plugin_update/wordpress_slider_intent.php' style='vertical-align: bottom' class='button button-primary'>?</a></div>"
+                                            var str = "<div style='margin:5px;'><input id='image-url' type='hidden' name='image_slider[url][]' value='" + attachment.url + "' /><img id='image-view' class='thumbnail thumbnail-image' src='" + attachment.url + "' style='height: 80px; width: 160px;cursor: pointer' onclick='delete_slider(this);'/><a style='vertical-align: bottom' onclick='delete_slider(this)' class='button button-secoundary'>حذف</a><label>رویداد ارجاع مستقیم :</label><input dir='ltr' id='image-intent' type='text' name='image_slider[intent][]' value='' /><a target='_blank' href='https://joapp.ir/plugin_update/wordpress_slider_intent.php' style='vertical-align: bottom' class='button button-primary'>?</a></div>"
                                             jQuery('#stack_slider').append(str);
                                         });
                                         mediaUploader.open();
@@ -1452,6 +1458,7 @@ class JOAPP_API {
                     </div>
                     <hr/>
                     <a class="button button-primary" target="_blank" href="http://panel.pushe.co/signin">سامانه Pushe.Co</a>
+                    <a class="button" target="_blank" href="admin.php?page=joapp-api&page_joapp=send_notification">ارسال با استفاده از API</a>
                 </div>
             </div>
             <?php
@@ -1735,16 +1742,14 @@ class JOAPP_API {
         exit();
     }
 
-    function time_stamp($format = "Y-m-d H:00:00") {
-        $tz = 'UTC';
-
-        $given = new DateTime(date($format));
-        $timestamp = $given->getTimestamp();
-
-        $dt = new DateTime("now", new DateTimeZone($tz));
-        $dt->setTimestamp($timestamp);
-        $dt->format($format);
-        return "" . $dt->getTimestamp();
+    function time_stamp($format = "Y-m-d H:0") {
+        date_default_timezone_set('UTC');
+        if ($format == "")
+            $date_format = date('Y-m-d H:i:s');
+        else
+            $date_format = date($format);
+        $date = new DateTime($date_format);
+        return "" . $date->getTimestamp();
     }
 
 }

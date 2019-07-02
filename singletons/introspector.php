@@ -8,6 +8,7 @@ class JOAPP_API_Introspector {
 
         $output = array();
         while (have_posts()) {
+
             the_post();
 
             if ($wp_posts) {
@@ -151,7 +152,7 @@ class JOAPP_API_Introspector {
             foreach ($postslist as $p) {
                 if ($count_exist >= $count_posts)
                     break;
-                $p_ok = new JOAPP_API_Product($p->ID,TRUE);
+                $p_ok = new JOAPP_API_Product($p->ID, TRUE);
 
                 if ($p_ok->id !== "-999" && $p_ok->in_stock) {
                     $cat->products[] = $p_ok;
@@ -166,6 +167,7 @@ class JOAPP_API_Introspector {
             $cat->is_menu = in_array($cat->id, $hidden_list_menu);
             $categories_res[] = $cat;
         }
+        
         return $categories_res;
     }
 
@@ -208,6 +210,7 @@ class JOAPP_API_Introspector {
     public function get_current_category() {
         global $joapp_api;
         extract($joapp_api->query->get(array('id', 'slug', 'category_id', 'category_slug')));
+
         if ($id || $category_id) {
             if (!$id) {
                 $id = $category_id;
@@ -217,6 +220,7 @@ class JOAPP_API_Introspector {
             if (!$slug) {
                 $slug = $category_slug;
             }
+
             return $this->get_category_by_slug($slug);
         } else {
             $joapp_api->error("Include 'id' or 'slug' var in your request.");
@@ -225,7 +229,8 @@ class JOAPP_API_Introspector {
     }
 
     public function get_category_by_id($category_id) {
-        $wp_category = get_term_by('id', $category_id, 'category');
+        //$wp_category = get_term_by('id', $category_id, 'category');
+        $wp_category = get_term($category_id);
         return $this->get_category_object($wp_category);
     }
 
@@ -412,7 +417,6 @@ class JOAPP_API_Introspector {
 
         $query = array_merge($query, $wp_query->query);
 
-
         if ($joapp_api->query->page) {
             $query['paged'] = $joapp_api->query->page;
         }
@@ -442,6 +446,7 @@ class JOAPP_API_Introspector {
             array_push($arr_post_type, "joapp_intent");
             $query['post_type'] = $arr_post_type;
         }
+
 
         if (!empty($query)) {
             query_posts($query);
