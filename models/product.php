@@ -21,6 +21,8 @@ class JOAPP_API_Product {
     var $product_meta;                  // HashMap<String, Object>
     var $managing_stock = false;        //boolean
     var $stock_quantity = 0;            //int
+    var $sold_individually = false;
+    
     private $is_small = false;
 
     function JOAPP_API_Product($wp_prodct_id, $is_small = false) {
@@ -29,7 +31,7 @@ class JOAPP_API_Product {
         $this->init_JOAPP_API_Product();
         do_action("joapp_api_action_product_init", $this);
     }
-
+    
     function init_JOAPP_API_Product() {
 
         $product = wc_get_product($this->id);
@@ -66,6 +68,7 @@ class JOAPP_API_Product {
             unset($this->rating_count);
             unset($this->attributes);
             unset($this->product_meta);
+            unset($this->sold_individually);
             return;
         }
 
@@ -74,8 +77,11 @@ class JOAPP_API_Product {
         $this->permalink = $product->get_permalink();
         
         $this->managing_stock = $product->managing_stock();
-        
+        $this->sold_individually = (method_exists($product, 'is_sold_individually') && $product->is_sold_individually());
         $this->stock_quantity = ($this->managing_stock) ? $product->get_stock_quantity() : 1000;
+        if($this->stock_quantity >0 && $this->sold_individually){
+            $this->stock_quantity = 1;
+        }
         $this->weight = $product->get_weight() ? $product->get_weight() : null;
         $this->dimensions = array(
             'length' => $product->get_length(),
@@ -83,8 +89,12 @@ class JOAPP_API_Product {
             'height' => $product->get_height(),
             'unit' => get_option('woocommerce_dimension_unit'),
         );
-         
-        $this->description = get_post($this->id)->post_content;
+        
+        $content = get_post($this->id)->post_content;
+        $content = apply_filters('the_content', $content);
+        $content = str_replace(']]>', ']]&gt;', $content);
+        
+        $this->description = $content;
       
         if ($this->description === "") {
             $this->description = $this->short_description;
@@ -100,11 +110,15 @@ class JOAPP_API_Product {
         if ($meta) {
             foreach ($meta as $meta_key => $meta_value) {
                 if (!is_protected_meta($meta_key)) {
-                    $meta_data['product_meta'][$meta_key] = maybe_unserialize($meta_value[0]);
+                    $meta_data[$meta_key] = maybe_unserialize($meta_value[0]);
                 }
             }
         }
         $this->product_meta = $meta_data;
+    }
+    
+    function isSmall(){
+        return $this->is_small;
     }
 
     private function get_images($product) {

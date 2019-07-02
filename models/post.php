@@ -174,15 +174,27 @@ class JOAPP_API_Post {
             $content = get_the_content($joapp_api->query->read_more);
             $content = apply_filters('the_content', $content);
             $content = str_replace(']]>', ']]&gt;', $content);
-
             $header = html_entity_decode(get_option("joapp_header_posts", ""));
             $footer = html_entity_decode(get_option("joapp_footer_posts", ""));
-
+//            $wpheader = $this->joapp_wp_head();
+//            $wpfooter = $this->joapp_wp_footer();
             $this->content = $header . $content . $footer;
         } else {
             unset($this->content);
         }
     }
+
+//    function joapp_wp_head() {
+//        ob_start();
+//        wp_head();
+//        return ob_get_clean();
+//    }
+//    
+//    function joapp_wp_footer() {
+//        ob_start();
+//        wp_footer();
+//        return ob_get_clean();
+//    }
 
     function set_categories_value() {
         global $joapp_api;
@@ -372,5 +384,4 @@ class JOAPP_API_Post {
     }
 
 }
-
 ?>
