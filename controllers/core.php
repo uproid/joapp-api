@@ -60,6 +60,7 @@ class JOAPP_API_Core_Controller {
     }
 
     private function get_comment_children(&$all_joapp, $post_id, $comment_id, &$index = -1) {
+
         $args = array(
             'status' => 'approve',
             'post_id' => $post_id,
@@ -67,7 +68,6 @@ class JOAPP_API_Core_Controller {
             'orderby' => 'comment_ID',
             'order' => 'ASC'
         );
-
         $all_wp = get_comments($args);
 
         foreach ($all_wp as $v) {
@@ -81,8 +81,7 @@ class JOAPP_API_Core_Controller {
 
     public function get_comment() {
         global $joapp_api, $joapp_result;
-        $post_id;
-        extract($joapp_api->query->get(array('post_id')));
+        extract($joapp_api->query->get(array('post_id', 'page')));
 
         $all_joapp = array();
         $this->get_comment_children($all_joapp, $post_id, 0);
@@ -283,7 +282,6 @@ class JOAPP_API_Core_Controller {
     }
 
     public function get_shipping_methods_city() {
-
         global $joapp_data;
 
         $joapp_data['country'] = isset($_REQUEST['country']) ? $_REQUEST['country'] : "IR";
@@ -295,7 +293,8 @@ class JOAPP_API_Core_Controller {
             $joapp_data['city'] = $_REQUEST['city'];
 
         do_action("joapp_api_action_data_shipping_methods_city");
-        if (count($joapp_data) <= 1){
+
+        if (count($joapp_data) <= 1) {
             return $this->get_shipping_methods();
         }
 
@@ -368,9 +367,11 @@ class JOAPP_API_Core_Controller {
             'menus' => $menus
         );
         if ($using_woo) {
-            $joapp_result['t'] = $joapp_api->time_stamp('Y-m-d H:t:s');
+            $joapp_result['t'] = $joapp_api->time_stamp('Y-m-d H:i:s');
             $joapp_result['allow_guest'] = (bool) get_option("joapp_api_allow_guest", FALSE);
         }
+
+
         do_action("joapp_api_action_get_woo_categories");
         return $joapp_result;
     }
@@ -405,7 +406,9 @@ class JOAPP_API_Core_Controller {
 
     function get_user_shipping() {
         global $joapp_api;
-        extract($joapp_api->query->get(array('user', 'pass', 'is_guest', 'orders')));
+        extract($joapp_api->query->get(array('user', 'pass', 'is_guest', 'orders', 'ja_orders')));
+        $ja_orders = isset($_REQUEST['ja_orders']) ? $ja_orders : $orders;
+        
         $checked_guest = ($user && $user === "-9898" && $is_guest && $is_guest === '1' && get_option('joapp_api_allow_guest', false));
         if ($user || $checked_guest) {
             if (!$checked_guest) {
@@ -418,8 +421,6 @@ class JOAPP_API_Core_Controller {
                 if (is_null($u->ID)) {
                     $u = get_user_by('email', "$user");
                 }
-
-                $customer = new WC_Customer($u->ID);
 
                 $shipping = array(
                     'first_name' => get_user_meta($u->ID, 'billing_first_name', true),
@@ -470,8 +471,8 @@ class JOAPP_API_Core_Controller {
             }
             $check_orders = array();
 
-            if ($orders) {
-                $orders_str = base64_decode($orders);
+            if ($ja_orders) {
+                $orders_str = base64_decode($ja_orders);
                 $arr_orders = json_decode($orders_str, TRUE);
                 $arr_orders_clean = array();
 
@@ -502,6 +503,10 @@ class JOAPP_API_Core_Controller {
                                 $msg .= $o->get_title() . " به این تعداد در انبار موجود نیست.";
                             }
                         }
+
+                        if (method_exists($o, 'is_sold_individually') && $o->is_sold_individually() && $qu_order['quantity'] > 1) {
+                            $msg .= $o->get_title() . " تنها برای فروش تکی میباشد";
+                        }
                     } else {
                         $msg .= $id_order . " وجود ندارد. ";
                     }
@@ -529,12 +534,13 @@ class JOAPP_API_Core_Controller {
 
             $location['update_flag'] = $update_states;
             global $joapp_result;
+
             $joapp_result = array(
                 'count' => 1,
                 'shipping' => $shipping,
                 'shipping_form' => $shipping_form,
                 'check_orders' => $check_orders,
-                'locations' => $location
+                'locations' => $location,
             );
             do_action("joapp_api_action_get_user_shipping");
             return $joapp_result;
@@ -570,12 +576,14 @@ class JOAPP_API_Core_Controller {
         if (!$category) {
             $joapp_api->error("Not found.");
         }
+
+
         $posts = $joapp_api->introspector->get_posts(array(
             'cat' => $category->id
         ));
 
         $result = $this->posts_object_result($posts, $category);
-
+        $result['post_view'] = get_option("joapp_api_taxonomy_post_view_$category->id", "one_product_large");
         return $result;
     }
 
@@ -646,7 +654,7 @@ class JOAPP_API_Core_Controller {
             'categories' => $categories
         );
         if ($using_woo) {
-            $joapp_result['t'] = $joapp_api->time_stamp('Y-m-d H:t:s');
+            $joapp_result['t'] = $joapp_api->time_stamp('Y-m-d H:i:s');
         }
         do_action("joapp_api_action_get_category_index");
         return $joapp_result;
@@ -675,6 +683,10 @@ class JOAPP_API_Core_Controller {
 
         global $joapp_api;
 
+        if (isset($_REQUEST['cart_token'])) {
+            $this->start_pay_webview();
+            exit();
+        }
 
         if (!isset($_REQUEST['d'])) {
             $joapp_api->error("Include 'user' var in your request.");
@@ -729,17 +741,19 @@ class JOAPP_API_Core_Controller {
                 wp_set_auth_cookie($u->ID);
             }
 
+            $pay_for_order = "pay_for_order=true&";
+
             if (count(explode("?", $pay_link)) == 1) {
                 if (substr($pay_link, strlen($pay_link) - 1, 1) === '/')
-                    $url = "$pay_endpoint/$oid/?pay_for_order=true&key=$item_key";
+                    $url = "$pay_endpoint/$oid/?{$pay_for_order}key=$item_key";
                 else
-                    $url = "/$pay_endpoint/$oid/?pay_for_order=true&key=$item_key";
+                    $url = "/$pay_endpoint/$oid/?{$pay_for_order}key=$item_key";
             }
             else {
                 if (substr($pay_link, strlen($pay_link) - 1, 1) === '/')
-                    $url = "?$pay_endpoint=$oid&pay_for_order=true&key=$item_key";
+                    $url = "?$pay_endpoint=$oid&{$pay_for_order}key=$item_key";
                 else
-                    $url = "&$pay_endpoint=$oid&pay_for_order=true&key=$item_key";
+                    $url = "&$pay_endpoint=$oid&{$pay_for_order}key=$item_key";
             }
 
             $ur = $pay_link . $url;
@@ -990,7 +1004,7 @@ class JOAPP_API_Core_Controller {
         $page = $page - 1;
 
         $args = $this->create_arg_product("slug", $wp_category->slug, $page);
-
+        $cat_id = $wp_category->term_taxonomy_id;
         $postslist = get_posts($args);
         $products = array();
         foreach ($postslist as $p) {
@@ -1000,7 +1014,8 @@ class JOAPP_API_Core_Controller {
         $joapp_result = array(
             'products' => $products,
             'pages' => 5,
-            'skey' => $res
+            'skey' => $res,
+            'post_view' => get_option("joapp_api_taxonomy_post_view_$cat_id", "one_product_large")
         );
 
         do_action('joapp_api_action_get_woo_one_products_category');
@@ -1245,6 +1260,216 @@ class JOAPP_API_Core_Controller {
 
         return $joapp_result;
     }
+
+    public function get_cart_start() {
+
+        global $joapp_api;
+        extract($joapp_api->query->get(array('user', 'pass', 'is_guest', 'ja_orders')));
+
+        $checked_guest = ($user && $user === "-9898" && $is_guest && $is_guest === '1' && get_option('joapp_api_allow_guest', false));
+        if ($user || $checked_guest) {
+            if (!$checked_guest) {
+                if (!wp_login($user, $pass)) {
+                    $joapp_api->error_title_details("login", "Not Logined...", $joapp_api->getRegisterLink());
+                }
+
+                $u = get_user_by('login', "$user");
+
+                if (is_null($u->ID)) {
+                    $u = get_user_by('email', "$user");
+                }
+
+                // $customer = new WC_Customer($u->ID);
+
+
+                $shipping = array(
+                    'first_name' => get_user_meta($u->ID, 'billing_first_name', true),
+                    'last_name' => get_user_meta($u->ID, 'billing_last_name', true),
+                    'company' => get_user_meta($u->ID, 'billing_company', true),
+                    'address_1' => get_user_meta($u->ID, 'billing_address_1', true),
+                    'address_2' => get_user_meta($u->ID, 'billing_address_2', true),
+                    'city' => get_user_meta($u->ID, 'billing_city', true),
+                    'state' => get_user_meta($u->ID, 'billing_state', true),
+                    'postcode' => get_user_meta($u->ID, 'billing_postcode', true),
+                    'country' => get_user_meta($u->ID, 'billing_country', true),
+                    'email' => get_user_meta($u->ID, 'billing_email', true),
+                    'phone' => get_user_meta($u->ID, 'billing_phone', true),
+                );
+            } else {
+                
+            }
+
+            $str_shipping_forms = get_option("joapp_api_shipping_forms", '[]');
+            $shipping_form = json_decode($str_shipping_forms, TRUE);
+
+            if (!is_array($shipping_form) || count($shipping_form) == 0) {
+                $shipping_form = array(
+                    "FIRST_NAME",
+                    "LAST_NAME",
+                    "COMPANY",
+                    "ADDRESS_1",
+                    "ADDRESS_2",
+                    "CITY",
+                    "STATE",
+                    "POSTCODE",
+                    "COUNTRY",
+                    "EMAIL",
+                    "PHONE",
+                    "NOTE"
+                );
+            }
+            $check_orders = array();
+
+            if ($ja_orders) {
+                $orders_str = base64_decode($ja_orders);
+                $arr_orders = json_decode($orders_str, TRUE);
+                $arr_orders_clean = array();
+
+                foreach ($arr_orders as $ord) {
+                    if (!isset($arr_orders_clean[$ord['product_id']])) {
+                        $arr_orders_clean[$ord['product_id']]['quantity'] = $ord['quantity'];
+                    } else {
+                        $arr_orders_clean[$ord['product_id']]['quantity'] += $ord['quantity'];
+                    }
+                }
+
+                foreach ($arr_orders_clean as $id_order => $qu_order) {
+                    $msg = "";
+                    $o = wc_get_product($id_order);
+                    if ($o) {
+                        $in_stock = TRUE;
+                        if (method_exists($o, "is_in_stock"))
+                            $in_stock = $o->is_in_stock();
+                        else
+                            $in_stock = method_exists($o, "get_stock_status") ? ((bool) ($o->get_stock_status() == "instock")) : false;
+
+                        if (!$in_stock) {
+                            $msg .= $o->get_title() . " موجود نیست. ";
+                        }
+
+                        if ($o->managing_stock()) {
+                            if ($o->get_stock_quantity() < $qu_order['quantity']) {
+                                $msg .= $o->get_title() . " به این تعداد در انبار موجود نیست.";
+                            }
+                        }
+
+                        if (method_exists($o, 'is_sold_individually') && $o->is_sold_individually() && $qu_order['quantity'] > 1) {
+                            $msg .= $o->get_title() . " تنها برای فروش تکی میباشد";
+                        }
+                    } else {
+                        $msg .= $id_order . " وجود ندارد. ";
+                    }
+
+                    if (strlen($msg) > 0) {
+                        $check_orders[] = array(
+                            "order_id" => $id_order,
+                            "message" => $msg
+                        );
+                    }
+                }
+            }
+
+            $states = array();
+            $update_states = get_option("joapp_api_update_states", "0");
+
+            if (isset($_REQUEST['update_states']) && $_REQUEST['update_states'] < $update_states && $update_states > 0) {
+                include_once __DIR__ . "/../singletons/setting/JoAppState.php";
+                $JoAppState = new JoAppState();
+                $location['states'] = $JoAppState->getSelectedStates();
+                foreach ($location['states'] as &$ss) {
+                    $ss['cities'] = (array) $JoAppState->getSelectedCities($ss['code']);
+                }
+            }
+
+            $location['update_flag'] = $update_states;
+            global $joapp_result;
+
+            $cart_token = "";
+            if (count($check_orders) == 0 && $ja_orders) {
+                $cart_token = md5(rand(100000, 999999999));
+                while (get_option("joapp_api_cart_{$cart_token}", false) === true) {
+                    $cart_token = md5(rand(100000, 999999999));
+                }
+
+
+                $joapp_api->save_option("joapp_api_cart_{$cart_token}", json_encode($arr_orders_clean));
+            }
+
+            $joapp_result = array(
+                'count' => 1,
+                // 'shipping' => $shipping,
+                // 'shipping_form' => $shipping_form,
+                'check_orders' => $check_orders,
+                // 'locations' => $location,
+                'cart_token' => $cart_token
+            );
+            do_action("joapp_api_action_get_cart_start");
+            return $joapp_result;
+        } else {
+            $joapp_api->error_title_details("login", "Not Logined...", $joapp_api->getRegisterLink());
+        }
+    }
+
+    public function start_pay_webview() {
+        if (!isset($_REQUEST['cart_token']))
+            wp_die("خطای بررسی داده ها");
+
+        $cart_token = $_REQUEST['cart_token'];
+
+        if (!isset($_REQUEST['d'])) {
+            $joapp_api->error("Include 'user' var in your request.");
+        }
+
+        $data = base64_decode($_REQUEST['d']);
+        $arr = explode("{WOO}", $data);
+
+        $user = $arr[0];
+        $pass = $arr[1];
+
+        $is_guest = get_option('joapp_api_allow_guest', false) && $user === "-9898";
+        if ($user) {
+            if (!$is_guest) {
+                if (!wp_login($user, $pass)) {
+                    $joapp_api->error_details("Not Logined...", $joapp_api->getRegisterLink());
+                }
+
+                $u = get_user_by('login', "$user");
+
+                if (is_null($u->ID)) {
+
+                    if (!filter_var($user, FILTER_VALIDATE_EMAIL)) {
+                        $joapp_api->error("User Not Found.");
+                        exit();
+                    }
+                    $u = get_user_by('email', "$user");
+
+                    if (is_null($u->ID)) {
+                        $joapp_api->error("User Not Found.");
+                        exit();
+                    }
+                }
+            }
+            $products_str = get_option("joapp_api_cart_{$cart_token}", "{}");
+            $products = json_decode($products_str);
+            wp_clear_auth_cookie();
+
+            if ($user !== "-9898") {
+                wp_set_current_user($u->ID);
+                wp_set_auth_cookie($u->ID);
+            }
+            wc()->cart->empty_cart();
+
+            foreach ($products as $product_id => $value) {
+                wc()->cart->add_to_cart($product_id, $value->quantity);
+            }
+
+            header("location:" . wc_get_checkout_url() . "?&joapp_payment_page=1");
+        } else {
+            $joapp_api->error("User Not Found.");
+            exit();
+        }
+    }
+
 }
 
 ?>
